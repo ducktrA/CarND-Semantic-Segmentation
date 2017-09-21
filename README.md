@@ -36,6 +36,8 @@ Next the layers() function was built. A 1x1 conv layer was added as in the tutor
 epochs = 100, batch_size = 16, dropout = 0.5, learning_rate = 0.00005
 Visually good, few artifacts in top and bottom row. Final mean average loss ~0.16
 
+epochs = 100, batchsize = 16, dropout = 0.8, learning_rage = 0.00005 Visually good, denser labeling, almost no artefacts, final mean average loss ~ 0.07
+
 
 
 ##### Run
