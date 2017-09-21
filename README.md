@@ -40,7 +40,7 @@ Visually good, few artifacts in top and bottom row. Final mean average loss ~0.1
 epochs = 100, batchsize = 16, dropout = 0.8, learning_rage = 0.00005 Visually good, denser labeling, almost no artefacts, final mean average loss ~ 0.07
 
 ![alt text](https://github.com/ducktrA/CarND-Semantic-Segmentation/blob/master/runs/1505994691.4699028/uu_000089.png?raw=true)
-epochs = 50, batchsize = 16, dropout = 0.8, learning_rage = 0.00005 Visually good, denser labeling, almost no artefacts, final mean average loss ~ 0.66 --> epochs are needed due to fairly low learning rate
+epochs = 50, batchsize = 16, dropout = 0.8, learning_rage = 0.00005 Visually it looks more like a random guess, artefacts, final mean average loss ~ 0.66 --> much epochs are needed due to fairly low learning rate
 
 ##### Network Layers
 
