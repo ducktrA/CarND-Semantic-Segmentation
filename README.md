@@ -32,11 +32,16 @@ Actually this function is called two times. One time by the test procedure and a
 Next the layers() function was built. A 1x1 conv layer was added as in the tutorial, followed by the transposed layers. It took a couple of attempts to get the shapes matching to create ths skip connection. The first transpose_conv_one layer has shape (?,?,?,2), the vgg_layer4_out has shape (?,?,?,512). The output of the intermediate layers was adapted using the same 1x1 convolution as before. 
 
 ##### Training
+The batch size was choosen by memory constraints. using nvidia-smi showed that gpu memory is getting tight.
 
 epochs = 100, batch_size = 16, dropout = 0.5, learning_rate = 0.00005
 Visually good, few artifacts in top and bottom row. Final mean average loss ~0.16
 
 epochs = 100, batchsize = 16, dropout = 0.8, learning_rage = 0.00005 Visually good, denser labeling, almost no artefacts, final mean average loss ~ 0.07
+
+epochs = 50, batchsize = 16, dropout = 0.8, learning_rage = 0.00005 Visually good, denser labeling, almost no artefacts, final mean average loss ~ 0.66 --> epochs are needed due to fairly low learning rate
+
+
 
 
 
