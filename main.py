@@ -66,30 +66,40 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     # Encoder - attach encoder to vgg_layer7_out
          
     #print("vgg_layer7_out.shape: ", vgg_layer7_out.get_shape()) # (?,?,?,4096)
+    xavier = tf.contrib.layers.xavier_initializer_conv2d(uniform = True, seed=None, dtype=tf.float32)
+    #regularizer = tf.contrib.layers.l2_regularizer(1e-3)
 
-    conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, name = "conv_1x1", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-	
+    #conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, name = "conv_1x1", kernel_regularizer=regularizer, kernel_initializer=xavier)
+    conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, name = "conv_1x1", kernel_initializer=xavier)
+    
     #print("conv_1x1 shape: ", conv_1x1.get_shape())
     
-    transpose_conv_one = tf.layers.conv2d_transpose(conv_1x1, num_classes, 4, 2, name = "transpose_conv_one", padding="same", kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
+    #transpose_conv_one = tf.layers.conv2d_transpose(conv_1x1, num_classes, 4, 2, name = "transpose_conv_one", padding="same", kernel_regularizer = regularizer, kernel_initializer=xavier)
+    transpose_conv_one = tf.layers.conv2d_transpose(conv_1x1, num_classes, 4, 2, name = "transpose_conv_one", padding="same", kernel_initializer=xavier)
+   
     #print("transpose_conv__one shape: ", transpose_conv_one.get_shape())
     #print("vgg_layer4_out shape: ", vgg_layer4_out.get_shape())
 
     # transpose_conv_one has shape (?,?,?,2), vgg_layer4_out has shape (?,?,?,512)
     # either use output_shape
 
-    vgg_layer4_out = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    #vgg_layer4_out = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, kernel_regularizer=regularizer, kernel_initializer=xavier)
+    vgg_layer4_out = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, kernel_initializer=xavier)
     #print("vgg_layer4_out shape: ", vgg_layer4_out.get_shape())
 
 
     transpose_conv_one = tf.add(transpose_conv_one, vgg_layer4_out)
 
-    transpose_conv_two = tf.layers.conv2d_transpose(transpose_conv_one, num_classes, 4, 2, padding="SAME", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-    vgg_layer3_out = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    #transpose_conv_two = tf.layers.conv2d_transpose(transpose_conv_one, num_classes, 4, 2, padding="SAME", kernel_regularizer= regularizer, kernel_initializer=xavier)
+    #vgg_layer3_out = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, kernel_regularizer=regularizer, kernel_initializer=xavier)
+
+    transpose_conv_two = tf.layers.conv2d_transpose(transpose_conv_one, num_classes, 4, 2, padding="SAME", kernel_initializer=xavier)
+    vgg_layer3_out = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, kernel_initializer=xavier)
     transpose_conv_two = tf.add(transpose_conv_two, vgg_layer3_out)
 
     # where does the 16 and 8 come from? between the image and layer 3 there a two maxpool layers which shrink the resolution two times by two
-    transpose_conv_three = tf.layers.conv2d_transpose(transpose_conv_two, num_classes, 16, 8, padding="SAME" , kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    #transpose_conv_three = tf.layers.conv2d_transpose(transpose_conv_two, num_classes, 16, 8, padding="SAME" , kernel_regularizer= regularizer,kernel_initializer=xavier)
+    transpose_conv_three = tf.layers.conv2d_transpose(transpose_conv_two, num_classes, 16, 8, padding="SAME" , kernel_initializer=xavier)
 
     return transpose_conv_three
 
@@ -110,6 +120,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     labels = tf.reshape(correct_label, (-1,num_classes))
 
     cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = logits, labels = labels))
+
   
     optimizer = tf.train.AdamOptimizer(learning_rate)
     train_op = optimizer.minimize(cross_entropy_loss)
@@ -166,7 +177,7 @@ def run():
     # You'll need a GPU with at least 10 teraFLOPS to train on.
     #  https://www.cityscapes-dataset.com/
 
-    epochs = 100
+    epochs = 50
     batch_size = 16  # check memory consumption on gpu
 	
     with tf.Session() as sess:
@@ -191,7 +202,12 @@ def run():
 
         # dropout active during training
     	# ok, graph is completely defined, run the initializer
-        sess.run(tf.global_variables_initializer())    
+        sess.run(tf.global_variables_initializer())
+
+        regularizer = tf.contrib.layers.l2_regularizer(1e-3)
+        reg_variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        reg_term = tf.contrib.layers.apply_regularization(regularizer, reg_variables)
+        cross_entropy_loss += reg_term 
 
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, inp,
              correct_label, keep_prob, learning_rate)
